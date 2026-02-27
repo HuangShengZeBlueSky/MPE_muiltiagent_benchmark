@@ -1,0 +1,52 @@
+[project]
+name = "mpe-multiagent-benchmark"
+version = "1.0.0"
+description = "Multi-agent benchmark suite for PettingZoo MPE environments with LLM integration"
+authors = [
+    { name = "HuangShengZeBlueSky", email = "" }
+]
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+
+dependencies = [
+    "numpy>=1.24.0,<3.0.0",
+    "imageio>=2.31.0",
+    "imageio-ffmpeg>=0.4.9",
+    "pettingzoo[mpe]>=1.24.0",
+    "gymnasium>=1.2.0",
+    "openai>=1.0.0",
+    "google-generativeai>=0.3.0",
+    "python-dotenv>=1.0.0",
+    "Pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "mypy>=1.0.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+# UV 特定配置
+dev-dependencies = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false

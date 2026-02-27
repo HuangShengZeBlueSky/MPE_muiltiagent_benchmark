@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MPE 多智能体基准 - 使用说明（中文）</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;line-height:1.6;margin:0;background:#0f172a;color:#e5e7eb}
+    header{padding:24px 16px;background:#111827;position:sticky;top:0}
+    header h1{margin:0;font-size:20px}
+    main{max-width:920px;margin:0 auto;padding:24px 16px}
+    section{background:#111827;border:1px solid #1f2937;border-radius:12px;margin-bottom:16px;padding:16px}
+    h2{font-size:18px;margin:0 0 8px}
+    code,pre{background:#0b1022;color:#a5b4fc;border:1px solid #1f2937;border-radius:8px}
+    pre{padding:12px;overflow:auto}
+    a{color:#93c5fd;text-decoration:none}
+    a:hover{text-decoration:underline}
+    ul{margin:8px 0 0 20px}
+    footer{color:#9ca3af;padding:24px 16px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MPE 多智能体基准 - 使用说明（中文）</h1>
+  </header>
+  <main>
+    <section>
+      <h2>简介</h2>
+      <p>本项目基于 PettingZoo MPE 环境，提供使用 LLM 作为策略的多智能体基准。仓库已按工作流完成模块化标准化：主程序、Prompt 组件与观测解析器分离，统一调用 <code>get_api_engine(provider)</code> 接口。</p>
+      <p>源码位置：<a href="https://github.com/HuangShengZeBlueSky/MPE_muiltiagent_benchmark" target="_blank">GitHub 仓库</a></p>
+    </section>
+    <section>
+      <h2>环境准备</h2>
+      <pre><code># 克隆与安装
+git clone https://github.com/HuangShengZeBlueSky/MPE_muiltiagent_benchmark.git
+cd MPE_muiltiagent_benchmark
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+</code></pre>
+      <p>可选：使用 uv</p>
+      <pre><code>uv venv && source .venv/bin/activate
+uv pip install -e .
+</code></pre>
+    </section>
+    <section>
+      <h2>工作流（Workflow）</h2>
+      <ul>
+        <li>选择模型提供方：DeepSeek / Qwen / GPT / Gemini / Transformers / Ollama / vLLM</li>
+        <li>解析观测：使用 <code>obs/parse_*.py</code> 进行结构化解析（含自测试与真实采样）</li>
+        <li>构建 Prompt：<code>prompt/prompt_for_*.py</code> 提供四个模块化段落函数</li>
+        <li>运行环境：执行主脚本（<code>reference.py</code> / <code>speaker_listener.py</code> / <code>world_comm.py</code>）</li>
+        <li>查看产出：视频（mp4）与日志（json）自动保存到根目录</li>
+      </ul>
+    </section>
+    <section>
+      <h2>快速运行</h2>
+      <pre><code># 配置密钥（按 provider 需要）
+export OPENAI_API_KEY="your-key"
+export DEEPSEEK_API_KEY="your-key"
+
+# 运行主环境
+python reference.py
+python speaker_listener.py
+python world_comm.py
+
+# 采样真实 obs 并解析（World Comm）
+PYTHONPATH=. python obs/test_parse_world_comm_obs_real.py
+</code></pre>
+    </section>
+    <section>
+      <h2>统一模型接口</h2>
+      <pre><code>from utils_api import get_api_engine
+llm = get_api_engine("qwen", api_key="your-key", model_name="qwen3-max")
+action, thought = llm.generate_action(system_prompt, user_prompt)
+</code></pre>
+    </section>
+    <section>
+      <h2>输出与日志</h2>
+      <ul>
+        <li>视频：<code>*.mp4</code>（episode 回放）</li>
+        <li>日志：<code>*.json</code>（观测/动作/奖励/LLM 响应）</li>
+      </ul>
+    </section>
+    <section>
+      <h2>注意事项</h2>
+      <ul>
+        <li>PettingZoo <code>mpe</code> 将迁移到 <code>mpe2</code>，当前代码兼容旧路径。</li>
+        <li>如使用 Google Gemini，<code>google.generativeai</code> 将弃用，建议迁移到 <code>google.genai</code>。</li>
+      </ul>
+    </section>
+    <section>
+      <h2>状态与进度</h2>
+      <ul>
+        <li>Reference / Speaker Listener / World Comm：主程序 + Prompt + 解析器 全部模块化</li>
+        <li>World Comm：支持 LEADER/HUNTER/PREY 角色与通信载荷</li>
+        <li>解析器均内置自测；World Comm 提供真实采样脚本</li>
+      </ul>
+    </section>
+  </main>
+  <footer>
+    最后更新：2026-01-24 · 版本 0.1.0
+  </footer>
+</body>
+</html>

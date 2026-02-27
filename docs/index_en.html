@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MPE Multi-Agent Benchmark - User Guide (English)</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;line-height:1.6;margin:0;background:#0f172a;color:#e5e7eb}
+    header{padding:24px 16px;background:#111827;position:sticky;top:0}
+    header h1{margin:0;font-size:20px}
+    main{max-width:920px;margin:0 auto;padding:24px 16px}
+    section{background:#111827;border:1px solid #1f2937;border-radius:12px;margin-bottom:16px;padding:16px}
+    h2{font-size:18px;margin:0 0 8px}
+    code,pre{background:#0b1022;color:#a5b4fc;border:1px solid #1f2937;border-radius:8px}
+    pre{padding:12px;overflow:auto}
+    a{color:#93c5fd;text-decoration:none}
+    a:hover{text-decoration:underline}
+    ul{margin:8px 0 0 20px}
+    footer{color:#9ca3af;padding:24px 16px}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>MPE Multi-Agent Benchmark - User Guide</h1>
+  </header>
+  <main>
+    <section>
+      <h2>Overview</h2>
+      <p>This project builds multi-agent benchmarks on PettingZoo MPE with LLM-driven agents. Codebase is standardized and modular: main scripts, prompt modules, and observation parsers are separated; model calls are unified via <code>get_api_engine(provider)</code>.</p>
+      <p>Source: <a href="https://github.com/HuangShengZeBlueSky/MPE_muiltiagent_benchmark" target="_blank">GitHub Repository</a></p>
+    </section>
+    <section>
+      <h2>Setup</h2>
+      <pre><code># Clone & install
+git clone https://github.com/HuangShengZeBlueSky/MPE_muiltiagent_benchmark.git
+cd MPE_muiltiagent_benchmark
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+</code></pre>
+      <p>Optional: use uv</p>
+      <pre><code>uv venv && source .venv/bin/activate
+uv pip install -e .
+</code></pre>
+    </section>
+    <section>
+      <h2>Workflow</h2>
+      <ul>
+        <li>Select provider: DeepSeek / Qwen / GPT / Gemini / Transformers / Ollama / vLLM</li>
+        <li>Parse observations via <code>obs/parse_*.py</code> (with self-tests and real sampling)</li>
+        <li>Build prompts via <code>prompt/prompt_for_*.py</code> (four modular sections)</li>
+        <li>Run environments: <code>reference.py</code> / <code>speaker_listener.py</code> / <code>world_comm.py</code></li>
+        <li>Outputs: videos (mp4) and detailed logs (json) in repo root</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Quick Run</h2>
+      <pre><code># Configure secrets (per provider)
+export OPENAI_API_KEY="your-key"
+export DEEPSEEK_API_KEY="your-key"
+
+# Run main environments
+python reference.py
+python speaker_listener.py
+python world_comm.py
+
+# Sample real obs & parse (World Comm)
+PYTHONPATH=. python obs/test_parse_world_comm_obs_real.py
+</code></pre>
+    </section>
+    <section>
+      <h2>Unified Model Interface</h2>
+      <pre><code>from utils_api import get_api_engine
+llm = get_api_engine("qwen", api_key="your-key", model_name="qwen3-max")
+action, thought = llm.generate_action(system_prompt, user_prompt)
+</code></pre>
+    </section>
+    <section>
+      <h2>Outputs</h2>
+      <ul>
+        <li>Videos: <code>*.mp4</code> (episode replay)</li>
+        <li>Logs: <code>*.json</code> (observations/actions/rewards/LLM responses)</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Notes</h2>
+      <ul>
+        <li>PettingZoo <code>mpe</code> will be moved to <code>mpe2</code>; current code supports old import path.</li>
+        <li><code>google.generativeai</code> is deprecated; please migrate to <code>google.genai</code>.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Status</h2>
+      <ul>
+        <li>Reference / Speaker Listener / World Comm: standardized with modular main + prompts + parsers</li>
+        <li>World Comm: supports roles LEADER/HUNTER/PREY and communication payloads</li>
+        <li>Parsers ship self-tests; World Comm provides real sampling script</li>
+      </ul>
+    </section>
+  </main>
+  <footer>
+    Last updated: 2026-01-24 · Version 0.1.0
+  </footer>
+</body>
+</html>

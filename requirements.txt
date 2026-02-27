@@ -1,0 +1,27 @@
+# MPE Multi-Agent Benchmark Requirements
+# Python 3.8+ required (tested on 3.12.3)
+
+# Core Dependencies
+numpy>=1.24.0,<3.0.0
+imageio>=2.31.0
+imageio-ffmpeg>=0.4.9
+
+# Multi-Agent Environment
+pettingzoo[mpe]>=1.24.0
+gymnasium>=1.2.0  # Required by PettingZoo
+
+# API Libraries for LLM Integration
+openai>=1.0.0
+google-generativeai>=0.3.0
+python-dotenv>=1.0.0
+
+# Image/Video Processing
+Pillow>=10.0.0
+
+# Optional: For local models (uncomment if needed)
+# torch>=2.0.0
+# transformers>=4.30.0
+# ollama>=0.1.0
+# vllm>=0.2.0
+
+# Note: Use 'pip install -r requirements.txt' to install all dependencies

@@ -1,0 +1,57 @@
+# 环境配置和密钥
+.env
+.env.local
+.env.*.local
+config.json
+secrets.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+.venv/
+.venv-*
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# 项目特定
+results/
+
+*.json.backup
+benchmark_results.json
+.vscode/settings.json
+qwen3-max*
+
+# 日志和临时文件
+*.log
+*.tmp
+temp/
+.cache/
