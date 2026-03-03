@@ -23,6 +23,7 @@ export default defineConfig({
                     { text: '指南', link: '/zh/guide/overview' },
                     { text: '游戏环境', link: '/zh/games/simple' },
                     { text: '进阶', link: '/zh/advanced/prompt-engineering' },
+                    { text: 'Leadboard', link: '/zh/advanced/leadboard' },
                 ],
                 sidebar: {
                     '/zh/guide/': [
@@ -59,6 +60,7 @@ export default defineConfig({
                                 { text: '提示词工程', link: '/zh/advanced/prompt-engineering' },
                                 { text: 'Benchmark 评测', link: '/zh/advanced/benchmark' },
                                 { text: '视频与日志展示', link: '/zh/advanced/media-guide' },
+                                { text: 'Leadboard 报告', link: '/zh/advanced/leadboard' },
                             ]
                         }
                     ],
@@ -94,6 +96,7 @@ export default defineConfig({
                     { text: 'Guide', link: '/en/guide/overview' },
                     { text: 'Games', link: '/en/games/simple' },
                     { text: 'Advanced', link: '/en/advanced/prompt-engineering' },
+                    { text: 'Leadboard', link: '/en/advanced/leadboard' },
                 ],
                 sidebar: {
                     '/en/guide/': [
@@ -130,6 +133,7 @@ export default defineConfig({
                                 { text: 'Prompt Engineering', link: '/en/advanced/prompt-engineering' },
                                 { text: 'Benchmark Evaluation', link: '/en/advanced/benchmark' },
                                 { text: 'Videos & Logs Guide', link: '/en/advanced/media-guide' },
+                                { text: 'Leadboard Report', link: '/en/advanced/leadboard' },
                             ]
                         }
                     ],

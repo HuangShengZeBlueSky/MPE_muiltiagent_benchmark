@@ -8,8 +8,8 @@ from benchmark_runner import run_benchmark
 MODELS = [
     #"kimi-k2.5",
     #"GLM-5",
-    "Gemini-3.0-Flash",
-    "Qwen-3-Max"
+    #"Gemini-3.0-Flash",
+    #"Qwen-3-Max"
     
 ]
 
