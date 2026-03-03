@@ -5,7 +5,7 @@
 :::
 
 <video controls width="100%" style="max-width: 640px; border-radius: 8px;">
-  <source src="/MPE_muiltiagent_benchmark/videos/adversary_ep1.mp4" type="video/mp4">
+  <source src="/videos/adversary_ep1.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
