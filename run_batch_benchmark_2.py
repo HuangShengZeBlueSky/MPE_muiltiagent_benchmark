@@ -7,15 +7,15 @@ from benchmark_runner import run_benchmark
 # Models specified by the user
 MODELS = [
     #"kimi-k2.5",
-    #"GLM-5",
-    "Gemini-3.0-Flash",
-    "Qwen-3-Max"
+    "GLM-5",
+    #"Gemini-3.0-Flash",
+    #"Qwen-3-Max"
     
 ]
 
 # All 9 MPE environments
 ENVIRONMENTS = [
-    "spread", "adversary", "tag"
+    "adversary"
 ]
 
 NUM_EPISODES = 10

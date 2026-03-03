@@ -78,6 +78,23 @@ def setup_env():
     google_key = input("   GOOGLE_API_KEY: ").strip()
     if google_key:
         config["GOOGLE_API_KEY"] = google_key
+
+    # Zaiwen
+    print("\n📌 Zaiwen 统一网关")
+    print("   填写你自己的网关 Key 和 Base URL")
+    zaiwen_key = input("   ZAIWEN_API_KEY: ").strip()
+    if zaiwen_key:
+        config["ZAIWEN_API_KEY"] = zaiwen_key
+
+    zaiwen_base = input("   ZAIWEN_API_BASE (例如 https://.../chat/completions): ").strip()
+    if zaiwen_base:
+        config["ZAIWEN_API_BASE"] = zaiwen_base
+
+    # Qwen OpenAI兼容 Base URL（可选）
+    print("\n📌 Qwen OpenAI 兼容网关（可选）")
+    qwen_base = input("   QWEN_API_BASE (可选): ").strip()
+    if qwen_base:
+        config["QWEN_API_BASE"] = qwen_base
     
     # 本地模型配置（可选）
     print("\n📌 本地模型配置（可选）")
@@ -129,6 +146,9 @@ def show_status():
         ("DEEPSEEK_API_KEY", "DeepSeek"),
         ("OPENAI_API_KEY", "OpenAI"),
         ("GOOGLE_API_KEY", "Google Gemini"),
+        ("ZAIWEN_API_KEY", "Zaiwen"),
+        ("ZAIWEN_API_BASE", "Zaiwen Base URL"),
+        ("QWEN_API_BASE", "Qwen Base URL"),
         ("TRANSFORMERS_MODEL_PATH", "Transformers"),
         ("OLLAMA_MODEL_NAME", "Ollama"),
     ]

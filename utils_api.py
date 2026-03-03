@@ -330,17 +330,25 @@ def get_api_engine(provider: str, **kwargs) -> APIInferencer:
         }
     
     elif provider == "qwen":
+        qwen_base_url = kwargs.get("base_url", kwargs.get("api_base", os.getenv("QWEN_API_BASE")))
         config = {
             "provider": "qwen",
             "api_key": kwargs.get("api_key", os.getenv("QWEN_API_KEY")),
-            #"base_url": "https://realmrouter.cn/v1",
-            #"base_url": "https://back.zaiwenai.com/api/v1/ai/chat/completions",
-            "base_url": "https://autobak.zaiwen.top/api/v1/chat/completions",    
+            "base_url": qwen_base_url,
             #"model_name": "qwen3-max"
             "model_name": os.getenv("MODEL_NAME", "Qwen-3-Max")
         }
+
+        if not config["api_key"]:
+            raise ValueError("QWEN_API_KEY is not set. Please configure it in .env or pass api_key.")
+        if not config["base_url"]:
+            raise ValueError("QWEN_API_BASE is not set. Please configure it in .env or pass api_base/base_url.")
     
     elif provider == "zaiwen":
+        raw_base_url = kwargs.get("base_url", kwargs.get("api_base", os.getenv("ZAIWEN_API_BASE")))
+        if raw_base_url and raw_base_url.rstrip("/").endswith("/chat/completions"):
+            raw_base_url = raw_base_url[: -len("chat/completions")].rstrip("/") + "/"
+
         # 专门为 Zaiwen 迁移的配置块
         config = {
             # 这里的 provider 设为 openai，以便复用 APIInferencer 中处理 OpenAI 协议的逻辑
@@ -348,9 +356,15 @@ def get_api_engine(provider: str, **kwargs) -> APIInferencer:
             # 优先使用传入参数 -> 其次环境变量 -> 最后默认值(由于你提供了 Key，这里作为 fallback)
             "api_key": kwargs.get("api_key", os.getenv("ZAIWEN_API_KEY")),
             # 注意 URL 路径修剪
-            "base_url": "https://back.zaiwenai.com/api/v1/ai/",
+            "base_url": raw_base_url,
             "model_name": kwargs.get("model_name", "Qwen-3-Max")    
         }
+
+        if not config["api_key"]:
+            raise ValueError("ZAIWEN_API_KEY is not set. Please configure it in .env or pass api_key.")
+        if not config["base_url"]:
+            raise ValueError("ZAIWEN_API_BASE is not set. Please configure it in .env or pass api_base/base_url.")
+
         print(f"DEBUG: Zaiwen config: {config}")
     
     elif provider in ["gpt", "chatgpt", "openai"]:

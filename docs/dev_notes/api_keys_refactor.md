@@ -84,7 +84,7 @@ python benchmark_runner.py
 ```python
 # utils_api.py
 config = {
-    "api_key": "sk-uKY08odZkPWydWDNeGe9Clz6zRDbQKXw7BadG323uOhWgaxg",  # ❌ 硬编码！
+   "api_key": "sk-your-actual-key",  # ❌ 硬编码！
 }
 ```
 
@@ -96,7 +96,7 @@ config = {
 }
 
 # .env 文件（本地）
-QWEN_API_KEY=sk-uKY08odZkPWydWDNeGe9Clz6zRDbQKXw7BadG323uOhWgaxg
+QWEN_API_KEY=sk-your-actual-key
 
 # .gitignore
 .env  # ✅ 防止提交
