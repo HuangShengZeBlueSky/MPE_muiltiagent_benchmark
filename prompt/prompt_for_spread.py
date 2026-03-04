@@ -53,8 +53,9 @@ def get_action_and_response_format() -> str:
         "   - Target on right/down(dx>0, dy<0): a2=0.9, a3=0.9, a1=a4=0.0\n"
         "   - Approaching target (|dx|,|dy|<0.2): set all to 0.0 to brake.\n"
         "RESPONSE FORMAT (strict, ONE LINE ONLY):\n"
-        '{"action": [a0,a1,a2,a3,a4], "notes": "Short Strategy"}\n'
-        "- a0..a4 must be floats in [0,1]; output ONLY this JSON line."
+        '{"action": [a0,a1,a2,a3,a4], "thought": "Internal reasoning", "message": "Public broadcast"}\n'
+        "- a0..a4 must be floats in [0,1].\n"
+        "- 'message' is a short string broadcast to teammates for next step. Output ONLY this JSON line."
     )
 
 

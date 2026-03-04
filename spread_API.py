@@ -44,20 +44,68 @@ def _format_current_obs(obs_struct: Dict[str, Any], num_agents: int) -> str:
         f"{obs_struct}\n"
     )
 
+def generate_semantic_feedback(agent_id: str, reward: float, obs_struct: Dict[str, Any]) -> str:
+    """Translate raw numerical rewards and state into text feedback."""
+    feedback = f"Step numeric reward: {reward:.3f}. "
+    
+    # Check collisions
+    collisions = sum(1 for ag in obs_struct.get('other_agent_rel', []) if ag[2] < 0.3)
+    if collisions > 0:
+        feedback += f"CRITICAL: Collided with {collisions} teammate(s). "
+        
+    # Check landmark coverage
+    lm_dists = [lm[2] for lm in obs_struct.get('landmark_rel', [])]
+    if lm_dists:
+        min_dist = min(lm_dists)
+        if min_dist < 0.1:
+            feedback += "Successfully covering a landmark. "
+        else:
+            feedback += f"Not covering any landmark (closest is {min_dist:.2f} away). "
+            
+    return feedback
 
-def user_prompt(agent: str, step_idx: int, obs_struct: Dict[str, Any], num_agents: int, local_ratio: float) -> str:
+
+def user_prompt(agent: str, step_idx: int, obs_struct: Dict[str, Any], num_agents: int, local_ratio: float, comm_history: Dict[str, str] = None, long_term_memory: str = None, short_term_memory: List[str] = None) -> str:
     header = (
         f"ENV: {ENV_MODULE}\n"
         f"AGENT: {agent}\n"
         f"STEP: {step_idx}"
     )
 
+    if comm_history is not None:
+        comm_str = "COMMUNICATION FIELD (from previous step):\n"
+        for a_id, msg in comm_history.items():
+            if a_id != agent:
+                comm_str += f"- {a_id}: {msg}\n"
+        if not comm_history:
+            comm_str += "- (No messages yet)\n"
+        comm_str += "\n"
+    else:
+        comm_str = "COMMUNICATION FIELD:\n- (No messages yet)\n\n"
+
+    memory_str = "SHORT-TERM MEMORY (Recent actions and environment feedback):\n"
+    if short_term_memory and len(short_term_memory) > 0:
+        for mem in short_term_memory:
+            memory_str += f"- {mem}\n"
+    else:
+        memory_str += "- (No memories yet)\n"
+    memory_str += "\n"
+
+    ltm_str = "LONG-TERM MEMORY (Abstract skills/protocols previously learned):\n"
+    if long_term_memory is not None and long_term_memory.strip() != "":
+        ltm_str += f"{long_term_memory}\n"
+    else:
+        ltm_str += "- (No specialized skills acquired yet)\n"
+
     parts = [
         header,
         get_task_and_reward(num_agents, local_ratio),
         get_physics_rules(),
         get_action_and_response_format(),
-        get_navigation_hints(),
+        get_navigation_hints(),  # ALWAYS Immutable
+        ltm_str,  # Mutated by Optimizer over generations
+        memory_str,  # Short term sliding window
+        comm_str,
         _format_current_obs(obs_struct, num_agents),
     ]
 
@@ -68,17 +116,20 @@ def user_prompt(agent: str, step_idx: int, obs_struct: Dict[str, Any], num_agent
 # 主流程
 # ==============================================================================
 def run_spread_game(
-    provider: str,
+    provider: str | Dict[str, str],
     output_file: str = "spread_demo.mp4",
     N: int = DEFAULT_N,
     local_ratio: float = LOCAL_RATIO,
+    long_term_memories: Dict[str, str] = None,
+    disable_comm: bool = False,
     **kwargs
 ):
     """
     运行 Spread 游戏
     
     Args:
-        provider: 模型提供商 ('qwen', 'deepseek', 'gpt', 'ollama', 'transformers', etc.)
+        provider: 模型提供商 ('qwen', 'deepseek', 'gpt', 'ollama', 'transformers', etc.) 
+                  OR Dict mapping agent_id backends e.g. {"agent_0": "qwen", "agent_1": "deepseek"}
         output_file: 输出视频文件名
         N: 智能体数量
         local_ratio: 本地奖励比例
@@ -86,9 +137,10 @@ def run_spread_game(
     """
     MAX_STEPS = 30
     seed = kwargs.pop('seed', None)
-    llm_engine = get_api_engine(provider, **kwargs)
+    
+    # Initialize LLM Engine(s)
     system_prompt = "You are a decision module for a game agent. Output only one-line JSON."
-
+    
     print("Initializing MPE Simple...")
     env = simple_spread_v3.parallel_env(
         N=N,
@@ -98,10 +150,29 @@ def run_spread_game(
         render_mode="rgb_array",
     )
     observations, infos = env.reset(seed=seed) if seed is not None else env.reset()
+    
+    # Instantiate engine dictionary after env reset so we know all env.agents
+    agent_engines = {}
+    if isinstance(provider, dict):
+        for aid in env.agents:
+            agent_prov = provider.get(aid, "qwen") # fallback
+            agent_engines[aid] = get_api_engine(agent_prov, **kwargs)
+    else:
+        # Global provider
+        shared_engine = get_api_engine(provider, **kwargs)
+        for aid in env.agents:
+            agent_engines[aid] = shared_engine
+            
     frames = []
     game_log = []
     total_rewards = {aid: 0.0 for aid in env.agents}
     step_buffer = {}
+
+    comm_hub = {}
+    
+    # Store the last K steps (e.g. 3) of short-term memory per agent
+    st_memory = {aid: [] for aid in env.agents}
+    MEMORY_LIMIT = 3
 
     for step in range(MAX_STEPS):
         print(f"=== STEP {step} ===")
@@ -111,19 +182,43 @@ def run_spread_game(
 
         actions = {}
         step_buffer = {}
+        new_comm_hub = {}
         for agent_id in env.agents:
             obs_raw = observations[agent_id]
             obs_struct = parse_spread_obs(obs_raw, num_agents=N)
             print(f"Agent {agent_id} Obs: {obs_struct}")
 
-            full_prompt = user_prompt(agent_id, step, obs_struct, num_agents=N, local_ratio=local_ratio)
+            ltm = long_term_memories.get(agent_id) if long_term_memories else None
+            
+            # Pass None if disable_comm is True, otherwise pass comm_hub
+            active_comm = None if disable_comm else comm_hub
+            
+            full_prompt = user_prompt(agent_id, step, obs_struct, num_agents=N, local_ratio=local_ratio, comm_history=active_comm, long_term_memory=ltm, short_term_memory=st_memory[agent_id])
 
-            action_vec, response_text = llm_engine.generate_action(system_prompt, full_prompt)
+            action_vec, response_text = agent_engines[agent_id].generate_action(system_prompt, full_prompt)
             action_vec = np.clip(action_vec, 0.0, 1.0)
             actions[agent_id] = action_vec
-            step_buffer[agent_id] = {"obs": obs_struct, "action": action_vec, "thought": response_text}
+            
+            # Extract message
+            message = ""
+            try:
+                clean_text = response_text.split("</think>")[-1] if "</think>" in response_text else response_text
+                match = re.search(r'```json\s*(\{.*?\})\s*```', clean_text, re.DOTALL)
+                if not match:
+                    match = re.search(r'(\{.*?\})', clean_text, re.DOTALL)
+                if match:
+                    data = json.loads(match.group(1))
+                    message = data.get("message", "")
+            except Exception:
+                pass
+            new_comm_hub[agent_id] = message
+
+            step_buffer[agent_id] = {"obs": obs_struct, "action": action_vec, "thought": response_text, "message": message}
             print(f"  Action: {np.round(action_vec, 2)}")
+            print(f"  Message: {message}")
             print(f"  Response: {response_text[:]}...")
+
+        comm_hub = new_comm_hub
 
         if not actions:
             break
@@ -133,14 +228,25 @@ def run_spread_game(
         
         for aid, r in rewards.items():
             total_rewards[aid] += r
+            semantic_feedback = generate_semantic_feedback(aid, float(r), step_buffer[aid]["obs"])
             game_log.append({
                 "step": step,
                 "agent": aid,
                 "obs": step_buffer[aid]["obs"],
                 "action": step_buffer[aid]["action"].tolist(),
                 "thought": step_buffer[aid]["thought"],
-                "reward": float(r)
+                "message": step_buffer[aid]["message"],
+                "reward": float(r),
+                "semantic_feedback": semantic_feedback
             })
+            
+            # Update short term memory
+            # The action decided in the *previous* block resulted in this semantic_feedback
+            action_snippet = np.round(step_buffer[aid]["action"], 2).tolist()
+            st_memory[aid].append(f"Step {step}: Chose action force {action_snippet}. Feedback: {semantic_feedback}")
+            # Keep only recent memory
+            if len(st_memory[aid]) > MEMORY_LIMIT:
+                st_memory[aid].pop(0)
         
         if all(terminations.values()) or all(truncations.values()):
             break
