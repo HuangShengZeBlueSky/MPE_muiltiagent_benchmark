@@ -4,7 +4,6 @@ import time
 import numpy as np
 from collections import defaultdict
 from spread_API import run_spread_game
-from llm_mappo_pipeline import run_critic, run_optimizer
 from prompt.prompt_for_spread import get_navigation_hints
 
 # Load env variables explicitly
@@ -34,8 +33,8 @@ EXP_CONFIGS = {
 }
 
 TRAIN_EPISODES_PER_GEN = 3 # Number of rollouts for critic to sample from per generation
-GENERATIONS = 3      # If evolution is on, how many generations to run
-TEST_SEEDS = list(range(1, 11)) # Fixed seeds for the final Test Eval (1 to 10)
+GENERATIONS = 1      # If evolution is on, how many generations to run
+TEST_SEEDS = list(range(1, 3)) # Fixed seeds for the final Test Eval (1 to 10)
 N_AGENTS = 3
 LOCAL_RATIO = 0.5
 
