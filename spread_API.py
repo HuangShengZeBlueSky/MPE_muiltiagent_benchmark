@@ -216,7 +216,10 @@ def run_spread_game(
             step_buffer[agent_id] = {"obs": obs_struct, "action": action_vec, "thought": response_text, "message": message}
             print(f"  Action: {np.round(action_vec, 2)}")
             print(f"  Message: {message}")
-            print(f"  Response: {response_text[:]}...")
+            try:
+                print(f"  Response: {response_text[:]}...")
+            except UnicodeEncodeError:
+                print(f"  Response: [Unicode output omitted]")
 
         comm_hub = new_comm_hub
 
@@ -265,7 +268,16 @@ def run_spread_game(
     if frames:
         final_output = get_unique_filename(output_file)
         print(f"Saving video to {final_output}...")
-        imageio.mimsave(final_output, frames, fps=1)
+        try:
+            writer = imageio.get_writer(final_output, fps=2, codec='libx264', quality=8)
+            for frame in frames:
+                writer.append_data(frame)
+            writer.close()
+        except Exception:
+            # Fallback: save as GIF if ffmpeg is not available
+            gif_output = final_output.replace('.mp4', '.gif')
+            imageio.mimsave(gif_output, frames, fps=2)
+            print(f"  (ffmpeg unavailable, saved as GIF: {gif_output})")
     
     if game_log:
         log_file = get_unique_filename(output_file.replace(".mp4", ".json"))

@@ -33,16 +33,16 @@ EXP_CONFIGS = {
 }
 
 TRAIN_EPISODES_PER_GEN = 3 # Number of rollouts for critic to sample from per generation
-GENERATIONS = 1      # If evolution is on, how many generations to run
+GENERATIONS = 3      # If evolution is on, how many generations to run
 TEST_SEEDS = list(range(1, 3)) # Fixed seeds for the final Test Eval (1 to 10)
 N_AGENTS = 3
 LOCAL_RATIO = 0.5
 
 # Here you can map specific agents to specific APIs/Models
 PROVIDER_CONFIG = {
-    "agent_0": "zaiwen",
-    "agent_1": "zaiwen",
-    "agent_2": "zaiwen"
+    "agent_0": "gemini",
+    "agent_1": "gemini",
+    "agent_2": "gemini"
 }
 
 BASE_DIR = "results/experiments"
@@ -144,7 +144,7 @@ def run_experiment_group(exp_name, config):
             print(f"  [Train Metrics] Avg Reward: {np.mean(mean_rewards):.3f} | Avg Collisions: {avg_collisions:.1f}")
         
         # Evolution Step (Critic -> Optimizer)
-        if config["use_evolution"] and gen < gens_to_run - 1:
+        if config["use_evolution"] and gen < gens_to_run:
             worst_ep_idx = np.argmin([m["mean_reward"] for m in gen_metrics]) if gen_metrics else 0
             worst_log = os.path.join(exp_dir, f"train_gen_{gen}_ep_{worst_ep_idx}.json")
             

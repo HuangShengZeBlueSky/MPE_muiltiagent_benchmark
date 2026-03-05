@@ -379,7 +379,7 @@ def get_api_engine(provider: str, **kwargs) -> APIInferencer:
         config = {
             "provider": "gemini",
             "api_key": kwargs.get("api_key", os.getenv("GOOGLE_API_KEY")),
-            "model_name": kwargs.get("model_name", "gemini-1.5-pro")
+            "model_name": kwargs.get("model_name", "gemini-3-flash-preview")
         }
     
     # ========== 本地模型配置 ==========
