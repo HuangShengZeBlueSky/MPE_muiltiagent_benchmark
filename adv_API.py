@@ -154,7 +154,19 @@ def run_adversary_game(provider: str, output_name: str, **kwargs):
             # 为了防止网络波动，可以加个简单的重试或者异常捕获（在 get_api_engine 里已处理）
             action_vec, raw_thought = llm_engine.generate_action(system_role, full_prompt)
             
-            # D. 动作后处理 (Action Clipping)
+            # D. 动作后处理 (维度保护 + Clipping)
+            expected_dim = env.action_space(agent_id).shape[0]
+            actual_dim = int(action_vec.shape[0])
+            if actual_dim != expected_dim:
+                if actual_dim > expected_dim:
+                    action_vec = action_vec[:expected_dim]
+                else:
+                    action_vec = np.pad(action_vec, (0, expected_dim - actual_dim), mode='constant', constant_values=0.0)
+                print(
+                    f"⚠️ Action dim adjusted for {agent_id}: expected {expected_dim}, got {actual_dim}. "
+                    f"Using {expected_dim}-dim action."
+                )
+
             action_vec = np.clip(action_vec, 0.0, 1.0)
             actions[agent_id] = action_vec
             
