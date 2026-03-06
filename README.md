@@ -389,6 +389,17 @@ results/benchmarks/adversary/
 └── adversary_ep10.json
 ```
 
+### Batch Benchmark Leaderboard (Latest)
+
+- Full table: [results/batch_benchmarks/leaderboard.md](results/batch_benchmarks/leaderboard.md)
+- Current top (complete 10/10/10 runs): `Gemini-3.0-Flash` (`overall_available_mean = -5.2424`)
+
+GLM-5 current snapshot:
+- `spread`: `-37.7828` (10 episodes)
+- `adversary`: `-5.2547` (3 episodes, incomplete)
+- `tag`: `-1.5713` (10 episodes)
+- Coverage: `10/3/10` → use as interim result only; finish adversary 10 episodes before final comparison.
+
 ### JSON Log Format
 Each record contains:
 ```json

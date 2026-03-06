@@ -18,8 +18,8 @@ ENVIRONMENTS = [
     "adversary"
 ]
 
-NUM_EPISODES = 10
-FIXED_SEED_START = 1
+NUM_EPISODES = 6
+FIXED_SEED_START = 4
 BASE_OUT_DIR = "results/batch_benchmarks"
 
 def parse_args():
