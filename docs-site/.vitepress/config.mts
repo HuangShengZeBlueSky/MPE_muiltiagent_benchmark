@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 
-export default defineConfig({
+export default withMermaid(defineConfig({
     title: 'MPE Multi-Agent Benchmark',
     description: 'LLM-Driven Multi-Agent Particle Environment Benchmark Suite',
 
@@ -168,4 +169,4 @@ export default defineConfig({
             lazyLoading: true
         }
     }
-})
+}))

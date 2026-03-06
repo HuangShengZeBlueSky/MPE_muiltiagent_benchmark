@@ -132,30 +132,17 @@ def get_navigation_hints(**kwargs) -> str:
 
 下图展示了每一步的完整执行流程：
 
-```
-┌─────────────────────────────────────────────────────┐
-│                    主循环 (per step)                   │
-├─────────────────────────────────────────────────────┤
-│                                                     │
-│  ① PettingZoo Env   →  raw observation (numpy)      │
-│          ↓                                          │
-│  ② Obs Parser        →  structured dict             │
-│     parse_xxx_obs()     { vel, pos, landmarks... }  │
-│          ↓                                          │
-│  ③ Prompt Builder    →  user_prompt (string)        │
-│     user_prompt_xxx()   任务+物理+动作+导航          │
-│          ↓                                          │
-│  ④ LLM Engine        →  JSON response              │
-│     generate_action()   {"action":[...], "notes":}  │
-│          ↓                                          │
-│  ⑤ Post-process      →  clipped action              │
-│     np.clip(action)     [0,1]^5                     │
-│          ↓                                          │
-│  ⑥ env.step(actions) →  new obs, rewards, done      │
-│          ↓                                          │
-│  ⑦ Log & Render      →  JSON entry + video frame    │
-│                                                     │
-└─────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A["① PettingZoo Env"] -->|raw observation (numpy)| B["② Obs Parser (parse_xxx_obs)"]
+    B -->|structured dict {vel, pos...}| C["③ Prompt Builder (user_prompt_xxx)"]
+    C -->|user_prompt (string) - 包含任务+物理+动作+导航| D["④ LLM Engine (generate_action)"]
+    D -->|JSON response {'action':[], 'notes':...}| E["⑤ Post-process (np.clip)"]
+    E -->|clipped action [0,1]^5| F["⑥ env.step(actions)"]
+    F -->|new obs, rewards, done| G["⑦ Log & Render"]
+    
+    style A fill:#e1f5fe,stroke:#03a9f4,stroke-width:2px
+    style G fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
 ```
 
 **代码示例**（简化版）：
@@ -223,18 +210,17 @@ GOOGLE_API_KEY=xxx
 
 ## 数据流向图
 
-```
-用户运行 python spread_API.py
-        ↓
-get_api_engine("qwen")  →  创建 LLM 引擎
-        ↓
-pettingzoo.mpe.simple_spread_v3  →  创建环境
-        ↓
-  ┌─── 主循环 (25 steps × 3 agents = 75 次 LLM 调用) ───┐
-  │                                                      │
-  │  每步：parse_obs → build_prompt → LLM → action       │
-  │        ↓ log                                         │
-  └──────────────────────────────────────────────────────┘
-        ↓
-spread_demo.mp4  +  spread_demo.json
+```mermaid
+flowchart TD
+    Start("用户运行 python spread_API.py") --> Engine["get_api_engine('qwen')\n(创建 LLM 引擎)"]
+    Engine --> Env["pettingzoo.mpe.simple_spread_v3\n(创建环境)"]
+    Env --> Loop{"主循环\n(25 steps × 3 agents = 75 次 LLM 调用)"}
+    
+    Loop --> |每步| StepProcess["parse_obs → build_prompt → LLM → action → log"]
+    StepProcess -.-> Loop
+    
+    Loop --> |结束| Output["spread_demo.mp4 + spread_demo.json"]
+    
+    style Start fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    style Output fill:#e1bee7,stroke:#9c27b0,stroke-width:2px
 ```

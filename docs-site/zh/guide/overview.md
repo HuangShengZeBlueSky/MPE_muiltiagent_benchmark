@@ -6,16 +6,28 @@ MPE Multi-Agent Benchmark 是一个基于 **PettingZoo MPE (Multi-agent Particle
 
 ## 核心思想
 
-传统强化学习 (RL) 中，智能体的策略由神经网络学习得到：
+## 核心思想
 
-```
-观测 (numpy) → 神经网络策略 → 动作 (numpy)
-```
+传统强化学习 (RL) 中，智能体的策略由神经网络学习得到；但在本项目中，我们将这一过程替换为基于大语言模型的决策架构：
 
-在本项目中，我们将这一过程替换为：
+```mermaid
+flowchart LR
+    subgraph Traditional["传统强化学习 (Traditional RL)"]
+        direction LR
+        O1[观测<br>numpy] --> P1[神经网络策略]
+        P1 --> A1[动作<br>numpy]
+    end
 
-```
-观测 (numpy) → 结构化解析 → 自然语言提示词 → LLM 推理 → JSON 动作
+    subgraph LLM_Base["本项目 (LLM Decision Engine)"]
+        direction LR
+        O2[观测<br>numpy] --> Parse[结构化解析]
+        Parse --> Prompt[自然语言提示词]
+        Prompt --> LLM[LLM 推理]
+        LLM --> A2[JSON 动作]
+    end
+    
+    style Traditional fill:#eceff1,stroke:#607d8b,stroke-width:2px,stroke-dasharray: 5 5
+    style LLM_Base fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
 ```
 
 这使得我们可以直接评估 LLM 的：
